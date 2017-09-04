@@ -1,13 +1,15 @@
-# tx - texture conversion library and tools
-[![Travis Build Status](https://travis-ci.org/starkat99/tx-rs.svg?branch=master)](https://travis-ci.org/starkat99/tx-rs) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/bxyw546v23w1xnm2?svg=true)](https://ci.appveyor.com/project/starkat99/tx-rs) 
+# tc - Texture Compression in Rust 
+[![Build Status](https://travis-ci.org/starkat99/tc.svg?branch=master)](https://travis-ci.org/starkat99/tc) [![Build status](https://ci.appveyor.com/api/projects/status/qr9d10mrn05v3hie?svg=true)](https://ci.appveyor.com/project/starkat99/tc)
 
-## Repository crates
-- [tc - texture compression crate](tc/)
-- [ddsfmt - DDS file format](dds/)
+Texture compression encoders and decoders for S3TC (a.k.a DXT), RGTC, BPTC, ETC1/ETC2, ASTC, etc. 
+
+## Documentation
+
+- [Latest Changes](CHANGELOG.md)
 
 ## License
 
-These crates are distributed under the terms of either of:
+This library is distributed under the terms of either of:
 
 * MIT license ([LICENSE-MIT](LICENSE-MIT) or
 [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))

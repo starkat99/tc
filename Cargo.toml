@@ -1,6 +1,12 @@
 [package]
-name = "tc"
+name = "tx"
 version = "0.0.1"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
+repository = "https://github.com/starkat99/tx-rs"
 
-[dependencies]
+[workspace]
+members = ["tc", "dds"]
+
+[patch.crates-io]
+tc = { path = "tc" }
+ddsfmt = { path = "dds" }

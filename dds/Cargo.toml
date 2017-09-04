@@ -1,0 +1,8 @@
+[package]
+name = "ddsfmt"
+version = "0.1.0"
+authors = ["Kathryn Long <squeeself@gmail.com>"]
+
+[dependencies]
+bitflags = "0.9"
+byteorder = "1.1"
