@@ -1,5 +1,4 @@
 # DDSfmt
-[![Build Status](https://travis-ci.org/starkat99/ddsfmt.svg?branch=master)](https://travis-ci.org/starkat99/ddsfmt) [![Build status](https://ci.appveyor.com/api/projects/status/9aoewpt2uslr4cd3?svg=true)](https://ci.appveyor.com/project/starkat99/ddsfmt)
 
 A DDS file format reader and writer for Rust. 
 

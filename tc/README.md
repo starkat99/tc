@@ -1,5 +1,4 @@
-# tc - Texture Compression in Rust 
-[![Build Status](https://travis-ci.org/starkat99/tc.svg?branch=master)](https://travis-ci.org/starkat99/tc) [![Build status](https://ci.appveyor.com/api/projects/status/qr9d10mrn05v3hie?svg=true)](https://ci.appveyor.com/project/starkat99/tc)
+# tc - Texture Compression in Rust
 
 Texture compression encoders and decoders for S3TC (a.k.a DXT), RGTC, BPTC, ETC1/ETC2, ASTC, etc. 
 
