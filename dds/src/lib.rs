@@ -1,55 +1,17 @@
+#![allow(dead_code, unknown_lints)]
+
 #[macro_use]
 extern crate bitflags;
-extern crate byteorder;
+extern crate bytes;
+#[macro_use]
+extern crate error_chain;
+extern crate num_traits;
+#[macro_use]
+extern crate enum_primitive_derive;
 
-mod raw {
-    use byteorder::{LE, ByteOrder};
+pub mod raw;
 
-    bitflags! {
-        pub struct HeaderFlags: u32 {
-            const Caps = 0x1;
-            const Height = 0x2;
-            const Width = 0x4;
-            const Pitch = 0x8;
-            const PixelFormat = 0x1000;
-            const MipMapCount = 0x20000;
-            const LinearSize = 0x80000;
-            const Depth = 0x800000;
-            const Texture = Caps.bits | Height.bits | Width.bits | PixelFormat.bits;
-        }
-    }
-
-    struct Header<'a> {
-        buffer: &'a [u8]
-    }
-
-    impl<'a> Header<'a> {
-        pub fn new(buf: &'a [u8]) -> Header<'a> {
-            Header { buffer: buf }
-        }
-
-        pub fn has_magic_number(&self) -> bool {
-            &self.buffer[..8] == b"DDS \0\0\0\x7c" // Magic number plus header size
-        }
-
-        pub fn size(&self) -> (u32, u32) {
-            (LE::read_u32(&self.buffer[8..]), LE::read_u32(&self.buffer[12..]))
-        }
-
-        fn raw_flags(&self) -> HeaderFlags {
-            HeaderFlags::from_bits_truncate(LE::read_u32(&self.buffer[16..]))
-        }
-
-        fn raw_pitch(&self) -> Option<u32> {
-            if self.raw_flags().contains(Pitch) && !self.raw_flags().contains(LinearSize) {
-                Some(LE::read_u32(&self.buffer[20..]))
-            }
-            else {
-                None
-            }
-        }
-    }
-}
+error_chain!{}
 
 pub struct Dds {
     size: (u32, u32),
