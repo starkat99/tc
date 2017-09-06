@@ -9,24 +9,14 @@ extern crate num_traits;
 #[macro_use]
 extern crate enum_primitive_derive;
 
-pub mod header;
+mod header;
+pub mod formats;
 
-error_chain!{}
-
-pub struct Dds {
-    size: (u32, u32),
-    depth: Option<u32>,
-    dimension: Dimension,
-    srgb: bool,
-    alpha: Option<AlphaMode>,
-    format: Option<DataFormat>,
-}
-
-pub enum Dimension {
+pub enum TextureDimension {
     Texture1D,
     Texture2D,
     Texture3D,
-    Cube,
+    TextureCube,
 }
 
 pub enum CompressedFormat {
@@ -45,6 +35,10 @@ pub enum CompressedFormat {
     /// Compression resolution: 5 bits red, 6 bits green, 5 bits blue, 8 bits alpha
     /// Legacy compression for RGBA values with smoother alpha blending.
     BC3(BlockCompressionType),
+    BC4(SignedCompressionType),
+    BC5(SignedCompressionType),
+    BC6H(BC6HCompressionType),
+    BC7(BlockCompressionType),
     /// YCrCb color, 16 bits per pixel, 8 bits per sample.
     ///
     /// YUV 4:2:2 sampling: First pixel has U and Y samples, second has V and Y, etc., for a total
@@ -66,12 +60,39 @@ pub enum CompressedFormat {
     /// one block. Reverse component ordering of `R8G8B8G8`.
     G8R8G8B8,
     // Multi2Argb8: Uncompressed MultiElement texture, whatever that is
+    AYUV,
+    Y410,
+    Y416,
+    NV12,
+    P010,
+    P016,
+    Opaque420,
+    Y210,
+    Y216,
+    NV11,
+    AI44,
+    IA44,
+    P208,
+    V208,
+    V408,
 }
 
 pub enum BlockCompressionType {
-    Unspecified,
-    Unsigned,
-    Signed,
+    Typeless,
+    UnsignedNormalized,
+    UnsignedNormalizedSrgb,
+}
+
+pub enum SignedCompressionType {
+    Typeless,
+    UnsignedNormalized,
+    SignedNormalized,
+}
+
+pub enum BC6HCompressionType {
+    Typeless,
+    UnsignedFloat16,
+    SignedFloat16,
 }
 
 pub enum AlphaMode {
@@ -86,38 +107,46 @@ pub enum AlphaMode {
     Data,
 }
 
-pub enum ComponentType {
-    Unspecified(usize),
-    UnsignedInt(usize),
-    SignedInt(usize),
-    Float(usize),
-    UnsignedNormalized(usize),
-    SignedNormalized(usize),
-    FixedPoint(usize, usize),
-}
-
-pub enum ChannelSemantic {
-    Unspecified(ComponentType),
-    Red(ComponentType),
-    Green(ComponentType),
-    Blue(ComponentType),
-    Alpha(ComponentType),
-    Luminance(ComponentType),
-    Chrominance(ComponentType),
-    Depth(ComponentType),
-    Stencil(ComponentType),
-    PaletteIndex(ComponentType),
-    Exponent(ComponentType),
+pub enum ChannelFormat {
+    RGBA(usize, usize, usize, usize),
+    BGRA(usize, usize, usize, usize),
+    BGRUnused(usize, usize, usize, usize),
+    RGB(usize, usize, usize),
+    BGR(usize, usize, usize),
+    RG(usize, usize),
+    R(usize),
+    A(usize),
+    BitMask(usize, u32, u32, u32, u32),
 }
 
 pub enum UncompressedFormat {
-    OneComponent(ChannelSemantic),
-    TwoComponents(ChannelSemantic, ChannelSemantic),
-    ThreeComponents(ChannelSemantic, ChannelSemantic, ChannelSemantic),
-    FourComponents(ChannelSemantic, ChannelSemantic, ChannelSemantic, ChannelSemantic),
+    Typeless(ChannelFormat),
+    Float(ChannelFormat),
+    UnsignedNormalized(ChannelFormat),
+    UnsignedNormalizedSrgb(ChannelFormat),
+    SignedNormalized(ChannelFormat),
+    UnsignedInt(ChannelFormat),
+    SignedInt(ChannelFormat),
+    Other(SpecialUncompressedFormat),
 }
 
-pub enum DataFormat {
+pub enum SpecialUncompressedFormat {
+    R32G8X24Typeless,
+    D32FloatS8X24UnsignedInt,
+    R32FloatX8X24Typeless,
+    X32TypelessG8X24UnsignedInt,
+    D32Float,
+    D24UnsignedNormalizedS8UnsignedInt,
+    R24UnsignedNormalizedX8Typeless,
+    X24TypelessG8UnsignedInt,
+    D16UnsignedNormalized,
+    R9G9B9E5SharedExponent,
+    R10G10B10FixedPointBiasA2UnsignedNormalized,
+    P8,
+    A8P8,
+}
+
+pub enum TextureFormat {
     Uncompressed(UncompressedFormat),
     Compressed(CompressedFormat),
     Unknown(u32),

@@ -475,7 +475,9 @@ impl DdsHeader {
             }
         }
         // Check for 3D Texture
-        if self.depth.is_some() || self.caps2.contains(caps2::VOLUME) || dimension == ResourceDimension::Texture3D {
+        if self.depth.is_some() || self.caps2.contains(caps2::VOLUME) ||
+            dimension == ResourceDimension::Texture3D
+        {
             flags |= header_flags::DEPTH;
             caps2 |= caps2::VOLUME;
             dimension = ResourceDimension::Texture3D;
@@ -532,3 +534,5 @@ impl DdsHeader {
         }
     }
 }
+
+impl Format {}
