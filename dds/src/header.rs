@@ -1,3 +1,4 @@
+use std;
 use std::mem;
 use std::io::{Read, Write, Cursor};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -238,26 +239,29 @@ pub enum Endianness {
     Big,
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+enum SizeField {
+    Pitch(u32),
+    Linear(u32),
+}
+
 #[derive(Debug, Clone)]
 pub struct DdsHeader {
-    flags: header_flags::HeaderFlags,
     height: u32,
     width: u32,
-    pitch_or_linear_size: u32,
-    depth: u32,
-    mipmap_count: u32,
+    size: Option<SizeField>,
+    depth: Option<u32>,
+    mipmap_count: Option<u32>,
     pixel_format: pixel_format::PixelFormatFlags,
-    four_cc: [u8; 4],
+    four_cc_bytes: Option<[u8; 4]>,
     rgb_bit_counts: u32,
     r_bit_mask: u32,
     g_bit_mask: u32,
     b_bit_mask: u32,
     a_bit_mask: u32,
-    caps: caps::CapsFlags,
     caps2: caps2::Caps2Flags,
     format: Option<Format>,
     dimension: Option<ResourceDimension>,
-    misc: Option<misc::MiscFlags>,
     array_size: Option<u32>,
     misc2: Option<misc2::Misc2Flags>,
 }
@@ -267,6 +271,14 @@ impl DdsHeader {
     const PIXEL_FORMAT_BYTE_SIZE: u32 = 32;
     const EXTENDED_BYTE_SIZE: usize = 20;
 
+    fn calculate_pitch_or_linear_size(&self) -> SizeField {
+        unimplemented!()
+    }
+
+    fn is_extended_header(&self) -> bool {
+        &self.four_cc_bytes.unwrap_or_default() == b"DX10"
+    }
+
     pub fn from_bytes<E: ByteOrder, T: IntoBuf>(bytes: T) -> Result<DdsHeader> {
         let mut buf = bytes.into_buf();
         ensure!(
@@ -275,29 +287,51 @@ impl DdsHeader {
         );
         ensure!(&buf.bytes()[..4] == b"DDS ", ErrorKind::InvalidHeader);
         buf.advance(4);
-        let size = buf.get_u32::<E>();
+        let byte_size = buf.get_u32::<E>();
         ensure!(
-            size as usize == DdsHeader::BYTE_SIZE - 4,
+            byte_size as usize == DdsHeader::BYTE_SIZE - 4,
             ErrorKind::InvalidHeader
         );
         let flags = header_flags::HeaderFlags::from_bits_truncate(buf.get_u32::<E>());
         let height = buf.get_u32::<E>();
         let width = buf.get_u32::<E>();
         let pitch_or_linear_size = buf.get_u32::<E>();
+        let size = if flags.contains(header_flags::LINEAR_SIZE) {
+            Some(SizeField::Linear(pitch_or_linear_size))
+        } else if flags.contains(header_flags::PITCH) {
+            Some(SizeField::Pitch(pitch_or_linear_size))
+        } else {
+            None
+        };
         let depth = buf.get_u32::<E>();
+        let depth = if flags.contains(header_flags::DEPTH) {
+            Some(depth)
+        } else {
+            None
+        };
         let mipmap_count = buf.get_u32::<E>();
+        let mipmap_count = if flags.contains(header_flags::MIPMAP_COUNT) {
+            Some(mipmap_count)
+        } else {
+            None
+        };
         buf.advance(11 * 4); // Reserved bytes
 
-        let size = buf.get_u32::<E>();
+        let byte_size = buf.get_u32::<E>();
         ensure!(
-            size == DdsHeader::PIXEL_FORMAT_BYTE_SIZE,
+            byte_size == DdsHeader::PIXEL_FORMAT_BYTE_SIZE,
             ErrorKind::InvalidHeader
         );
         let pixel_format = pixel_format::PixelFormatFlags::from_bits_truncate(buf.get_u32::<E>());
 
-        let mut four_cc: [u8; 4] = [0, 0, 0, 0];
-        four_cc.copy_from_slice(&buf.bytes()[..4]);
-        let is_extended_header = &four_cc == b"DX10";
+        let mut four_cc_bytes: [u8; 4] = [0, 0, 0, 0];
+        four_cc_bytes.copy_from_slice(&buf.bytes()[..4]);
+        let is_extended_header = &four_cc_bytes == b"DX10";
+        let four_cc_bytes = if pixel_format.contains(pixel_format::FOURCC) {
+            Some(four_cc_bytes)
+        } else {
+            None
+        };
 
         let rgb_bit_counts = buf.get_u32::<E>();
         let r_bit_mask = buf.get_u32::<E>();
@@ -305,7 +339,7 @@ impl DdsHeader {
         let b_bit_mask = buf.get_u32::<E>();
         let a_bit_mask = buf.get_u32::<E>();
 
-        let caps = caps::CapsFlags::from_bits_truncate(buf.get_u32::<E>());
+        buf.get_u32::<E>(); // Caps, don't need this info, will generate ourselves if needed
         let caps2 = caps2::Caps2Flags::from_bits_truncate(buf.get_u32::<E>());
         buf.advance(3 * 4); // Unused/reserved bytes
 
@@ -319,14 +353,19 @@ impl DdsHeader {
             None
         };
         let dimension: Option<ResourceDimension> = if is_extended_header {
-             ResourceDimension::from_u32(buf.get_u32::<E>())
+            ResourceDimension::from_u32(buf.get_u32::<E>())
         } else {
             None
         };
-        let misc: Option<misc::MiscFlags> = if is_extended_header {
-            Some(misc::MiscFlags::from_bits_truncate(buf.get_u32::<E>()))
+        let caps2 = if is_extended_header {
+            let misc = misc::MiscFlags::from_bits_truncate(buf.get_u32::<E>());
+            if misc.contains(misc::TEXTURE_CUBE) {
+                caps2 | caps2::CUBEMAP
+            } else {
+                caps2
+            }
         } else {
-            None
+            caps2
         };
         let array_size: Option<u32> = if is_extended_header {
             Some(buf.get_u32::<E>())
@@ -340,24 +379,21 @@ impl DdsHeader {
         };
 
         Ok(DdsHeader {
-            flags,
             height,
             width,
-            pitch_or_linear_size,
+            size,
             depth,
             mipmap_count,
             pixel_format,
-            four_cc,
+            four_cc_bytes,
             rgb_bit_counts,
             r_bit_mask,
             g_bit_mask,
             b_bit_mask,
             a_bit_mask,
-            caps,
             caps2,
             format,
             dimension,
-            misc,
             array_size,
             misc2,
         })
@@ -400,8 +436,13 @@ impl DdsHeader {
     }
 
     pub fn write_to<E: ByteOrder, T: Write>(&self, output: &mut T) -> Result<()> {
-        let mut bytes: [u8; DdsHeader::BYTE_SIZE + DdsHeader::EXTENDED_BYTE_SIZE] = unsafe { mem::uninitialized() };
-        let len = if &self.four_cc == b"DX10" {bytes.len()} else { DdsHeader::BYTE_SIZE };
+        let mut bytes: [u8; DdsHeader::BYTE_SIZE + DdsHeader::EXTENDED_BYTE_SIZE] =
+            unsafe { mem::uninitialized() };
+        let len = if self.is_extended_header() {
+            bytes.len()
+        } else {
+            DdsHeader::BYTE_SIZE
+        };
         {
             let mut buf = Cursor::new(&mut bytes[..len]);
             self.put_buf::<E, _>(&mut buf);
@@ -410,36 +451,82 @@ impl DdsHeader {
     }
 
     fn put_buf<E: ByteOrder, T: BufMut>(&self, buf: &mut T) {
+        let is_extended_header = self.is_extended_header();
+        let mut flags = header_flags::TEXTURE; // Required flags
+        let pitch_or_linear_size: u32;
+        let mut depth = self.depth.unwrap_or_default();
+        let mut caps = caps::TEXTURE; // Required
+        let mut caps2 = self.caps2;
+        let mut misc = 0u32;
+        let mut dimension = self.dimension.unwrap_or(ResourceDimension::Texture2D);
+        let mut pixel_format = self.pixel_format;
+
+        // Make sure pitch/linear size is correct
+        match self.size.unwrap_or_else(
+            || self.calculate_pitch_or_linear_size(),
+        ) {
+            SizeField::Pitch(x) => {
+                flags |= header_flags::PITCH;
+                pitch_or_linear_size = x;
+            }
+            SizeField::Linear(x) => {
+                flags |= header_flags::LINEAR_SIZE;
+                pitch_or_linear_size = x;
+            }
+        }
+        // Check for 3D Texture
+        if self.depth.is_some() || self.caps2.contains(caps2::VOLUME) || dimension == ResourceDimension::Texture3D {
+            flags |= header_flags::DEPTH;
+            caps2 |= caps2::VOLUME;
+            dimension = ResourceDimension::Texture3D;
+            depth = std::cmp::max(depth, 1);
+        }
+        // Check for mips
+        if self.mipmap_count.is_some() {
+            flags |= header_flags::MIPMAP_COUNT;
+            caps |= caps::MIPMAP | caps::COMPLEX;
+        }
+        if self.caps2.contains(caps2::CUBEMAP) {
+            caps |= caps::COMPLEX;
+            if is_extended_header {
+                misc = misc::TEXTURE_CUBE.bits();
+            }
+        }
+        if self.four_cc_bytes.is_some() {
+            pixel_format |= pixel_format::FOURCC;
+        }
+
         buf.put_slice(b"DDS ");
         buf.put_u32::<E>(DdsHeader::BYTE_SIZE as u32);
-        buf.put_u32::<E>(self.flags.bits());
+
+        buf.put_u32::<E>(flags.bits());
         buf.put_u32::<E>(self.height);
         buf.put_u32::<E>(self.width);
-        buf.put_u32::<E>(self.pitch_or_linear_size);
-        buf.put_u32::<E>(self.depth);
-        buf.put_u32::<E>(self.mipmap_count);
+        buf.put_u32::<E>(pitch_or_linear_size);
+        buf.put_u32::<E>(depth);
+        buf.put_u32::<E>(self.mipmap_count.unwrap_or_default());
         let reserved: [u8; 11 * 4] = unsafe { mem::zeroed() };
         buf.put_slice(&reserved);
 
         buf.put_u32::<E>(DdsHeader::PIXEL_FORMAT_BYTE_SIZE);
-        buf.put_u32::<E>(self.pixel_format.bits());
+        buf.put_u32::<E>(pixel_format.bits());
         buf.put_u32::<E>(self.rgb_bit_counts);
-        buf.put_slice(&self.four_cc);
+        buf.put_slice(&self.four_cc_bytes.unwrap_or_default());
         buf.put_u32::<E>(self.rgb_bit_counts);
         buf.put_u32::<E>(self.r_bit_mask);
         buf.put_u32::<E>(self.g_bit_mask);
         buf.put_u32::<E>(self.b_bit_mask);
         buf.put_u32::<E>(self.a_bit_mask);
 
-        buf.put_u32::<E>(self.caps.bits());
-        buf.put_u32::<E>(self.caps2.bits());
+        buf.put_u32::<E>(caps.bits());
+        buf.put_u32::<E>(caps2.bits());
         let reserved: [u8; 3 * 4] = unsafe { mem::zeroed() };
         buf.put_slice(&reserved);
 
-        if &self.four_cc == b"DX10" {
+        if is_extended_header {
             buf.put_u32::<E>(self.format.and_then(|x| x.to_u32()).unwrap_or_default());
-            buf.put_u32::<E>(self.dimension.and_then(|x| x.to_u32()).unwrap_or_default());
-            buf.put_u32::<E>(self.misc.map(|x| x.bits()).unwrap_or_default());
+            buf.put_u32::<E>(dimension.to_u32().unwrap_or_default());
+            buf.put_u32::<E>(misc);
             buf.put_u32::<E>(self.array_size.unwrap_or_default());
             buf.put_u32::<E>(self.misc2.map(|x| x.bits()).unwrap_or_default());
         }

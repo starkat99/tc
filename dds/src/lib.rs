@@ -9,7 +9,7 @@ extern crate num_traits;
 #[macro_use]
 extern crate enum_primitive_derive;
 
-pub mod raw;
+pub mod header;
 
 error_chain!{}
 
