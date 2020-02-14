@@ -1,17 +1,7 @@
-#![allow(dead_code, unknown_lints)]
-
-#[macro_use]
-extern crate bitflags;
-extern crate bytes;
-#[macro_use]
-extern crate error_chain;
-extern crate num_traits;
-#[macro_use]
-extern crate enum_primitive_derive;
-
-mod header;
 pub mod formats;
+mod header;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TextureDimension {
     Texture1D,
     Texture2D,
@@ -19,6 +9,7 @@ pub enum TextureDimension {
     TextureCube,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CompressedFormat {
     /// Block Compression 1, a.k.a. DXT1. 4 bits per pixel.
     ///
@@ -77,24 +68,28 @@ pub enum CompressedFormat {
     V408,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BlockCompressionType {
     Typeless,
     UnsignedNormalized,
     UnsignedNormalizedSrgb,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SignedCompressionType {
     Typeless,
     UnsignedNormalized,
     SignedNormalized,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BC6HCompressionType {
     Typeless,
     UnsignedFloat16,
     SignedFloat16,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlphaMode {
     /// Alpha channel should be treated as fully opaque.
     Opaque,
@@ -107,6 +102,7 @@ pub enum AlphaMode {
     Data,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ChannelFormat {
     RGBA(usize, usize, usize, usize),
     BGRA(usize, usize, usize, usize),
@@ -119,6 +115,7 @@ pub enum ChannelFormat {
     BitMask(usize, u32, u32, u32, u32),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UncompressedFormat {
     Typeless(ChannelFormat),
     Float(ChannelFormat),
@@ -130,6 +127,7 @@ pub enum UncompressedFormat {
     Other(SpecialUncompressedFormat),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SpecialUncompressedFormat {
     R32G8X24Typeless,
     D32FloatS8X24UnsignedInt,
@@ -146,6 +144,7 @@ pub enum SpecialUncompressedFormat {
     A8P8,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TextureFormat {
     Uncompressed(UncompressedFormat),
     Compressed(CompressedFormat),

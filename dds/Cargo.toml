@@ -2,10 +2,10 @@
 name = "ddsfmt"
 version = "0.1.0"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-bitflags = "0.9"
-bytes = "0.4.5"
-error-chain = "0.11.0-rc.2"
-enum-primitive-derive = "0.1.2"
-num-traits = "0.1.40"
+bitflags = "1.2"
+byteorder = "1.3"
+thiserror = "1.0"
+num_enum = "0.4"

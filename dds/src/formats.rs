@@ -1,7 +1,10 @@
-use super::{TextureFormat, SpecialUncompressedFormat, CompressedFormat, BlockCompressionType, SignedCompressionType, BC6HCompressionType};
-use super::TextureFormat::{Uncompressed, Compressed};
-use super::UncompressedFormat::*;
-use super::ChannelFormat::*;
+use super::{
+    BC6HCompressionType, BlockCompressionType,
+    ChannelFormat::*,
+    CompressedFormat, SignedCompressionType, SpecialUncompressedFormat,
+    TextureFormat::{self, *},
+    UncompressedFormat::*,
+};
 
 // DXGI Formats
 const R32G32B32A32_TYPELESS: TextureFormat = Uncompressed(Typeless(RGBA(32, 32, 32, 32)));
@@ -26,10 +29,15 @@ const R32G32_FLOAT: TextureFormat = Uncompressed(Float(RG(32, 32)));
 const R32G32_UINT: TextureFormat = Uncompressed(UnsignedInt(RG(32, 32)));
 const R32G32_SINT: TextureFormat = Uncompressed(SignedInt(RG(32, 32)));
 
-const R32G8X24_TYPELESS: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::R32G8X24Typeless));
-const D32_FLOAT_S8X24_UINT: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::D32FloatS8X24UnsignedInt));
-const R32_FLOAT_X8X24_TYPELESS: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::R32FloatX8X24Typeless));
-const X32_TYPELESS_G8X24_UINT: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::X32TypelessG8X24UnsignedInt));
+const R32G8X24_TYPELESS: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::R32G8X24Typeless));
+const D32_FLOAT_S8X24_UINT: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::D32FloatS8X24UnsignedInt));
+const R32_FLOAT_X8X24_TYPELESS: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::R32FloatX8X24Typeless));
+const X32_TYPELESS_G8X24_UINT: TextureFormat = Uncompressed(Other(
+    SpecialUncompressedFormat::X32TypelessG8X24UnsignedInt,
+));
 
 const R10G10B10A2_TYPELESS: TextureFormat = Uncompressed(Typeless(RGBA(10, 10, 10, 2)));
 const R10G10B10A2_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(RGBA(10, 10, 10, 2)));
@@ -59,10 +67,16 @@ const R32_SINT: TextureFormat = Uncompressed(SignedInt(R(32)));
 const R24G8_TYPELESS: TextureFormat = Uncompressed(Typeless(RG(24, 8)));
 
 const D32_FLOAT: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::D32Float));
-const D24_UNORM_S8_UINT: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::D24UnsignedNormalizedS8UnsignedInt));
-const R24_UNORM_X8_TYPELESS: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::R24UnsignedNormalizedX8Typeless));
-const X24_TYPELESS_G8_UINT: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::X24TypelessG8UnsignedInt));
-const D16_UNORM: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::D16UnsignedNormalized));
+const D24_UNORM_S8_UINT: TextureFormat = Uncompressed(Other(
+    SpecialUncompressedFormat::D24UnsignedNormalizedS8UnsignedInt,
+));
+const R24_UNORM_X8_TYPELESS: TextureFormat = Uncompressed(Other(
+    SpecialUncompressedFormat::R24UnsignedNormalizedX8Typeless,
+));
+const X24_TYPELESS_G8_UINT: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::X24TypelessG8UnsignedInt));
+const D16_UNORM: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::D16UnsignedNormalized));
 
 const R8G8_TYPELESS: TextureFormat = Uncompressed(Typeless(RG(8, 8)));
 const R8G8_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(RG(8, 8)));
@@ -87,50 +101,87 @@ const R8_SINT: TextureFormat = Uncompressed(SignedNormalized(R(8)));
 const A8_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(A(8)));
 const R1_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(R(1)));
 
-const R9G9B9E5_SHAREDEXP: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::R9G9B9E5SharedExponent));
+const R9G9B9E5_SHAREDEXP: TextureFormat =
+    Uncompressed(Other(SpecialUncompressedFormat::R9G9B9E5SharedExponent));
 
 const R8G8_B8G8_UNORM: TextureFormat = Compressed(CompressedFormat::R8G8B8G8);
 const G8R8_G8B8_UNORM: TextureFormat = Compressed(CompressedFormat::G8R8G8B8);
 
-const BC1_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC1(BlockCompressionType::Typeless));
-const BC1_UNORM: TextureFormat = Compressed(CompressedFormat::BC1(BlockCompressionType::UnsignedNormalized));
-const BC1_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC1(BlockCompressionType::UnsignedNormalizedSrgb));
+const BC1_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC1(BlockCompressionType::Typeless));
+const BC1_UNORM: TextureFormat = Compressed(CompressedFormat::BC1(
+    BlockCompressionType::UnsignedNormalized,
+));
+const BC1_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC1(
+    BlockCompressionType::UnsignedNormalizedSrgb,
+));
 
-const BC2_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC2(BlockCompressionType::Typeless));
-const BC2_UNORM: TextureFormat = Compressed(CompressedFormat::BC2(BlockCompressionType::UnsignedNormalized));
-const BC2_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC2(BlockCompressionType::UnsignedNormalizedSrgb));
+const BC2_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC2(BlockCompressionType::Typeless));
+const BC2_UNORM: TextureFormat = Compressed(CompressedFormat::BC2(
+    BlockCompressionType::UnsignedNormalized,
+));
+const BC2_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC2(
+    BlockCompressionType::UnsignedNormalizedSrgb,
+));
 
-const BC3_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC3(BlockCompressionType::Typeless));
-const BC3_UNORM: TextureFormat = Compressed(CompressedFormat::BC3(BlockCompressionType::UnsignedNormalized));
-const BC3_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC3(BlockCompressionType::UnsignedNormalizedSrgb));
+const BC3_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC3(BlockCompressionType::Typeless));
+const BC3_UNORM: TextureFormat = Compressed(CompressedFormat::BC3(
+    BlockCompressionType::UnsignedNormalized,
+));
+const BC3_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC3(
+    BlockCompressionType::UnsignedNormalizedSrgb,
+));
 
-const BC4_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC4(SignedCompressionType::Typeless));
-const BC4_UNORM: TextureFormat = Compressed(CompressedFormat::BC4(SignedCompressionType::UnsignedNormalized));
-const BC4_SNORM: TextureFormat = Compressed(CompressedFormat::BC4(SignedCompressionType::SignedNormalized));
+const BC4_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC4(SignedCompressionType::Typeless));
+const BC4_UNORM: TextureFormat = Compressed(CompressedFormat::BC4(
+    SignedCompressionType::UnsignedNormalized,
+));
+const BC4_SNORM: TextureFormat = Compressed(CompressedFormat::BC4(
+    SignedCompressionType::SignedNormalized,
+));
 
-const BC5_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC5(SignedCompressionType::Typeless));
-const BC5_UNORM: TextureFormat = Compressed(CompressedFormat::BC5(SignedCompressionType::UnsignedNormalized));
-const BC5_SNORM: TextureFormat = Compressed(CompressedFormat::BC5(SignedCompressionType::SignedNormalized));
+const BC5_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC5(SignedCompressionType::Typeless));
+const BC5_UNORM: TextureFormat = Compressed(CompressedFormat::BC5(
+    SignedCompressionType::UnsignedNormalized,
+));
+const BC5_SNORM: TextureFormat = Compressed(CompressedFormat::BC5(
+    SignedCompressionType::SignedNormalized,
+));
 
 const B5G6R5_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(BGR(5, 6, 5)));
 const B5G6R5A1_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(BGRA(5, 6, 5, 1)));
 const B5G6R5A8_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(BGRA(5, 6, 5, 8)));
 const B5G6R5X8_UNORM: TextureFormat = Uncompressed(UnsignedNormalized(BGRUnused(5, 6, 5, 8)));
 
-const R10G10B10_XR_BIAS_A2_UNORM: TextureFormat = Uncompressed(Other(SpecialUncompressedFormat::R10G10B10FixedPointBiasA2UnsignedNormalized));
+const R10G10B10_XR_BIAS_A2_UNORM: TextureFormat = Uncompressed(Other(
+    SpecialUncompressedFormat::R10G10B10FixedPointBiasA2UnsignedNormalized,
+));
 
 const B8G8R8A8_TYPELESS: TextureFormat = Uncompressed(Typeless(BGRA(8, 8, 8, 8)));
 const B8G8R8A8_UNORM_SRGB: TextureFormat = Uncompressed(UnsignedNormalizedSrgb(BGRA(8, 8, 8, 8)));
 const B8G8R8X8_TYPELESS: TextureFormat = Uncompressed(Typeless(BGRUnused(8, 8, 8, 8)));
-const B8G8R8X8_UNORM_SRGB: TextureFormat = Uncompressed(UnsignedNormalizedSrgb(BGRUnused(8, 8, 8, 8)));
+const B8G8R8X8_UNORM_SRGB: TextureFormat =
+    Uncompressed(UnsignedNormalizedSrgb(BGRUnused(8, 8, 8, 8)));
 
-const BC6H_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC6H(BC6HCompressionType::Typeless));
-const BC6H_UF16: TextureFormat = Compressed(CompressedFormat::BC6H(BC6HCompressionType::UnsignedFloat16));
-const BC6H_SF16: TextureFormat = Compressed(CompressedFormat::BC6H(BC6HCompressionType::SignedFloat16));
+const BC6H_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC6H(BC6HCompressionType::Typeless));
+const BC6H_UF16: TextureFormat =
+    Compressed(CompressedFormat::BC6H(BC6HCompressionType::UnsignedFloat16));
+const BC6H_SF16: TextureFormat =
+    Compressed(CompressedFormat::BC6H(BC6HCompressionType::SignedFloat16));
 
-const BC7_TYPELESS: TextureFormat = Compressed(CompressedFormat::BC7(BlockCompressionType::Typeless));
-const BC7_UNORM: TextureFormat = Compressed(CompressedFormat::BC7(BlockCompressionType::UnsignedNormalized));
-const BC7_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC7(BlockCompressionType::UnsignedNormalizedSrgb));
+const BC7_TYPELESS: TextureFormat =
+    Compressed(CompressedFormat::BC7(BlockCompressionType::Typeless));
+const BC7_UNORM: TextureFormat = Compressed(CompressedFormat::BC7(
+    BlockCompressionType::UnsignedNormalized,
+));
+const BC7_UNORM_SRGB: TextureFormat = Compressed(CompressedFormat::BC7(
+    BlockCompressionType::UnsignedNormalizedSrgb,
+));
 
 const AYUV: TextureFormat = Compressed(CompressedFormat::AYUV);
 const Y410: TextureFormat = Compressed(CompressedFormat::Y410);
