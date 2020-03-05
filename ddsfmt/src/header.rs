@@ -22,7 +22,7 @@ pub enum DdsError {
 pub type Result<T> = std::result::Result<T, DdsError>;
 
 bitflags! {
-    pub struct HeaderFlags: u32 {
+    struct HeaderFlags: u32 {
         const CAPS = 0x1;
         const HEIGHT = 0x2;
         const WIDTH = 0x4;
@@ -39,7 +39,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct CapsFlags: u32 {
+    struct CapsFlags: u32 {
         const COMPLEX = 0x8;
         const MIPMAP = 0x400000;
         const TEXTURE = 0x1000;
@@ -47,7 +47,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct Caps2Flags: u32 {
+    struct Caps2Flags: u32 {
         const CUBEMAP = 0x200;
         const CUBEMAP_POSITIVE_X = 0x400;
         const CUBEMAP_NEGATIVE_X = 0x800;
@@ -67,7 +67,7 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct PixelFormatFlags: u32 {
+    struct PixelFormatFlags: u32 {
         const ALPHA_PIXELS = 0x1;
         const ALPHA = 0x2;
         const FOURCC = 0x4;
@@ -78,19 +78,21 @@ bitflags! {
 }
 
 bitflags! {
-    pub struct MiscFlags: u32 {
+    struct MiscFlags: u32 {
         const TEXTURE_CUBE = 0x4;
     }
 }
-
-bitflags! {
-    pub struct Misc2Flags: u32 {
-        const ALPHA_MODE_UNKNOWN = 0x0;
-        const ALPHA_MODE_STRAIGHT = 0x1;
-        const ALPHA_MODE_PREMULTIPLIED = 0x2;
-        const ALPHA_MODE_OPAQUE = 0x3;
-        const ALPHA_MODE_CUSTOM = 0x4;
-    }
+#[allow(non_camel_case_types)]
+#[derive(
+    Debug, Copy, Clone, Eq, PartialEq, Hash, PartialOrd, Ord, IntoPrimitive, TryFromPrimitive,
+)]
+#[repr(u32)]
+enum Misc2Flags {
+    ALPHA_MODE_UNKNOWN = 0x0,
+    ALPHA_MODE_STRAIGHT = 0x1,
+    ALPHA_MODE_PREMULTIPLIED = 0x2,
+    ALPHA_MODE_OPAQUE = 0x3,
+    ALPHA_MODE_CUSTOM = 0x4,
 }
 
 #[allow(non_camel_case_types)]
@@ -263,6 +265,7 @@ static FOURCC_EXTENDED_DX10_HEADER: &[u8] = b"DX10";
 impl DdsHeader {
     const HEADER_SIZE: usize = 124;
     const PIXEL_FORMAT_BYTE_SIZE: u32 = 32;
+    #[allow(dead_code)]
     const EXTENDED_BYTE_SIZE: usize = 20;
 
     pub fn get_texture_format(&self) -> TextureFormat {
@@ -484,8 +487,8 @@ impl DdsHeader {
         };
         let misc2: Option<Misc2Flags> = if is_extended_header {
             Some(
-                Misc2Flags::from_bits(reader.read_u32::<LE>()?)
-                    .ok_or(DdsError::UnsupportedFormat)?,
+                Misc2Flags::try_from(reader.read_u32::<LE>()?)
+                    .or(Err(DdsError::UnsupportedFormat))?,
             )
         } else {
             None
@@ -594,7 +597,7 @@ impl DdsHeader {
             writer.write_u32::<LE>(dimension as u32)?;
             writer.write_u32::<LE>(misc.bits())?;
             writer.write_u32::<LE>(self.array_size.unwrap_or_default())?;
-            writer.write_u32::<LE>(self.misc2.map(|x| x.bits()).unwrap_or_default())?;
+            writer.write_u32::<LE>(self.misc2.map(|x| x as u32).unwrap_or_default())?;
         }
 
         Ok(())
