@@ -1,8 +1,11 @@
 sudo: false
+os:
+  - linux
+  - windows
 language: rust
 rust:
-- stable
-- beta
-- nightly
+  - stable
+  - beta
+  - nightly
 script:
-- cargo test --all --verbose
+  - cargo test --all --verbose
