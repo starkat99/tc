@@ -1,5 +1,5 @@
 pub mod formats;
-mod header;
+pub mod header;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TextureDimension {
@@ -112,7 +112,7 @@ pub enum ChannelFormat {
     RG(usize, usize),
     R(usize),
     A(usize),
-    BitMask(usize, u32, u32, u32, u32),
+    BitMask(u32, u32, u32, u32, u32),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
